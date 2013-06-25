@@ -1,13 +1,18 @@
 from Tkinter import *
-from zipfile import ZipFile as zip
+import zipfile
 import urllib
 import os
 
 def downloadZipFile():
-  url = "http://download.thinkbroadband.com/1MB.zip"
+  #url = "http://download.thinkbroadband.com/1MB.zip"
+  url = "localfile.zip"
   print "downloading file from: " + url
-  (zipfile, headers) = urllib.urlretrieve(url)
-  return zipfile
+  (downloadedFile, headers) = urllib.urlretrieve(url)
+  if (zipfile.is_zipfile(downloadedFile) == True):
+    print "file is a valid ZIP-file"
+    return downloadedFile
+  else:
+    print "file is NOT a valid ZIP-file"
 
 # source: http://www.techniqal.com/blog/2008/07/31/python-file-read-write-with-urllib2/
 
@@ -56,6 +61,7 @@ file downloader / importer
 usb drive / sd card checker
 - available?
 - write protected?
+- checkbox : erase disk
 
 /////
 unpacker/unzipper
