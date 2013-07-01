@@ -1,69 +1,173 @@
-from Tkinter import *
 import zipfile
-import urllib
+from zipfile import ZipFile
 import os
+import shutil
 
-def downloadZipFile():
-  #url = "http://download.thinkbroadband.com/1MB.zip"
-  url = "localfile.zip"
-  print "downloading file from: " + url
-  (downloadedFile, headers) = urllib.urlretrieve(url)
-  if (zipfile.is_zipfile(downloadedFile) == True):
-    print "file is a valid ZIP-file"
-    return downloadedFile
+try:
+  import urllib.request as urllib
+except ImportError:
+  import urllib as urllib
+
+try:
+  import tkinter as tk
+except ImportError:
+  import Tkinter as tk
+
+try:
+  from tkinter import messagebox as tkMessageBox
+except ImportError:
+  import tkMessageBox as tkMessageBox
+
+try:
+  from tkinter.filedialog import askopenfilename
+except ImportError:
+  from tkFileDialog import askopenfilename
+try:
+  from tkinter.filedialog import askdirectory
+except ImportError:
+  from tkFileDialog import askdirectory
+
+unzipapp = tk.Tk()
+unzipapp.title("unzipapp")
+
+
+#def callback():
+#    print "click!"
+#    print var.get()
+
+#var = tk.IntVar()
+#c = tk.Checkbutton(unzipapp, text = "Expand", variable = var)
+#c.pack()
+
+# class CUnzipApp:
+
+#     def __init__(self, master):
+
+#         mainframe = tk.Frame(master)
+#         mainframe.pack()
+
+#         self.button = tk.Button(mainframe, text="QUIT", fg="red", command=mainframe.quit)
+#         self.button.pack(side='left')
+
+#         self.hi_there = tk.Button(mainframe, text="Hello", command=self.say_hi)
+#         self.hi_there.pack(side='left')
+
+#     def say_hi(self):
+#         print "hi there, everyone!"
+
+# root = tk.Tk()
+
+# app = CUnzipApp(root)
+
+# root.mainloop()
+# root.destroy() # optional; see description below
+
+def setsourcefile():
+  #print("setsourcefile()")
+  filepath = askopenfilename(filetypes = [('ZIP-files', '.zip'), ('All files', '.*')], title = "Pick a ZIP-file")
+  print(filepath)
+  sourcepath.delete(0, last='end')
+  sourcepath.insert(0, filepath)
+
+def loadsourcefile():
+  #print("loadsourcefile()")
+  print("Load from:", sourcepath.get())
+  #urllib.urlcleanup() # clear cache
+  (source, headers) = urllib.urlretrieve(sourcepath.get(), )
+  if ( zipfile.is_zipfile(source) == True ):
+    print("file is valid ZIP file")
+    sourcepath.delete(0, last='end')
+    sourcepath.insert(0, source)
+    print("New source file", source)
   else:
-    print "file is NOT a valid ZIP-file"
+    print("ERROR: File is NOT a valid ZIP file")
 
-# source: http://www.techniqal.com/blog/2008/07/31/python-file-read-write-with-urllib2/
+def setdestinationpath():
+  #print("setdestinationpath()")
+  path = askdirectory(initialdir="/", title="Select a drive or folder")
+  print(path)
+  destinationpath.delete(0, last='end')
+  destinationpath.insert(0, path)
 
-def selectZipFile():
-  print "select the zip file located locally"
+def erasepathcontent():
+  #print("erasepathcontent()")
+  for files in os.listdir(destinationpath.get()):
+    path = os.path.join(destinationpath.get(), files)
+    try:
+      if os.path.isfile(path):
+        print("Deleted entry:", path)
+        os.unlink(path)
+      else:
+        shutil.rmtree(path)
+        print("Deleted entry:", path)
+    except Exception as e:
+      print("Exception caught:", e)
 
-  return file
+def extracttopath():
+  #print("extracttopath()")
+  if (sourcepath.get() != ""):
+    if (os.path.isdir(destinationpath.get())):
+      if (overwrite.get() == True):
+        question = "Are you sure you want to ! ERASE ! contents of " + str(destinationpath.get()) + " ?"
+        print("WARNING: no check for illegal content of zip-file!")
+        areyousure = tkMessageBox.askyesno(message=question, icon='question', title='ERASE ALL!?')
+        if (areyousure == True):
+          print("Overwrite enabled! Erasing contents of:", destinationpath.get())
+          erasepathcontent()
+          print("Unpacking files...")
+          myfile = ZipFile(sourcepath.get())
+          myfile.extractall(destinationpath.get())
+          print("Done!")
+      else:
+        print("Overwrite disabled! Appending to:", destinationpath.get())
+        print("Unpacking files...")
+        myfile = ZipFile(sourcepath.get())
+        myfile.extractall(destinationpath.get())
+        print("Done!")
+    else:
+      print("destinationpath is not a directory")
+  else:
+    print("sourcepath is empty")
 
-def chooseOutputDisk():
-  print "select output disk from list..."
+print("App is running")
 
-  return path
+window = tk.Frame(unzipapp)
+inputframe = tk.Frame(window, width = 200, height = 100)
+outputframe = tk.Frame(window, width = 200, height = 100)
+messageframe = tk.Frame(window, width = 200, height = 20)
 
-def unpackToOutputDisk(file, path):
-  print "unpacking files to disk..."
+sourcetext = tk.Label(inputframe, text='input file: ')
+sourcepath = tk.Entry(inputframe)
+browsesourcefile = tk.Button(inputframe, text = 'browse...', command=setsourcefile)
+loadfile = tk.Button(inputframe, text = 'load file', command=loadsourcefile)
 
-myfile = downloadZipFile()
-local = open("myfile.zip", "w")
-local.write(myfile)
-local.close()
+destinationtext = tk.Label(outputframe, text='output path: ')
+destinationpath = tk.Entry(outputframe)
 
-"""
-chooseOutputDisk()
-unpackToOutputDisk()
+overwrite = tk.IntVar()
+overwritecontent = tk.Checkbutton(outputframe, text = 'overwrite', variable=overwrite, onvalue=True, offvalue=False)
 
-root = Tk()
+browsedestinationfile = tk.Button(outputframe, text = 'browse...', command=setdestinationpath)
+writecontent = tk.Button(outputframe, text = 'write!', command=extracttopath)
 
-w = Label(root, text="Hello, world!")
-w.pack()
+processmessages = tk.Message(messageframe, text = 'important message!')
 
+window.grid(column=0, row=0)
+inputframe.grid(column=0, row=0)
+outputframe.grid(column=0, row=1)
+messageframe.grid(column=0, row=2)
 
+sourcetext.grid(column=0, row=0)
+sourcepath.grid(column=1, row=0)
+browsesourcefile.grid(column=3, row=0)
+loadfile.grid(column=4, row=0)
 
-root.mainloop()
-"""
+destinationtext.grid(column=0, row=1)
+destinationpath.grid(column=1, row=1)
+overwritecontent.grid(column=2, row=1)
+browsedestinationfile.grid(column=3, row=1)
+writecontent.grid(column=4, row=1)
 
+processmessages.grid(column=0, row=2)
 
-
-"""
-/////
-file downloader / importer
-- insert zip
-- insert url
-- hardcoded
-
-/////
-usb drive / sd card checker
-- available?
-- write protected?
-- checkbox : erase disk
-
-/////
-unpacker/unzipper
-- write access to drive(s)
-"""
+unzipapp.mainloop()
