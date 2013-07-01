@@ -131,6 +131,8 @@ def extracttopath():
 
 print("App is running")
 
+tkMessageBox.showwarning(message="WARNING!\n\nThis app can erase all contents of directories when the 'overwrite' checkbox being marked! Do not use it or use with caution!")
+
 window = tk.Frame(unzipapp)
 inputframe = tk.Frame(window, width = 200, height = 100)
 outputframe = tk.Frame(window, width = 200, height = 100)
