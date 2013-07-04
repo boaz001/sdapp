@@ -21,6 +21,7 @@
 import zipfile
 from zipfile import ZipFile
 import os
+import platform
 import shutil
 
 try:
@@ -58,11 +59,13 @@ class CUnzipApp:
 
     self.sourcetext = tk.Label(self.inputframe, text='input file: ')
     self.sourcepath = tk.Entry(self.inputframe)
+    rClickbinder(self.sourcepath)
     self.browsesourcefile = tk.Button(self.inputframe, text = 'browse...', command=self.setsourcefile)
     self.loadfile = tk.Button(self.inputframe, text = 'download', command=self.loadsourcefile)
 
     self.destinationtext = tk.Label(self.outputframe, text='output path: ')
     self.destinationpath = tk.Entry(self.outputframe)
+    rClickbinder(self.destinationpath)
 
     self.overwrite = tk.IntVar()
     self.overwritecontent = tk.Checkbutton(self.outputframe, text = 'overwrite', variable=self.overwrite, onvalue=True, offvalue=False)
@@ -197,14 +200,20 @@ def rClicker(e):
   '''
 
   try:
+    # workaround for different cmd key on mac
+    if(platform.system() == 'Darwin'):
+      keyname = 'Command'
+    else:
+      keyname = 'Control'
+
     def rClick_Copy(e, apnd=0):
-      e.widget.event_generate('<Control-c>')
+      e.widget.event_generate('<' + keyname + '-c>')
 
     def rClick_Cut(e):
-      e.widget.event_generate('<Control-x>')
+      e.widget.event_generate('<' + keyname + '-x>')
 
     def rClick_Paste(e):
-      e.widget.event_generate('<Control-v>')
+      e.widget.event_generate('<' + keyname + '-v>')
 
     e.widget.focus()
 
@@ -219,7 +228,7 @@ def rClicker(e):
     for (txt, cmd) in nclst:
       rmenu.add_command(label=txt, command=cmd)
 
-    rmenu.tk_popup(e.x_root+40, e.y_root+10,entry="0")
+    rmenu.tk_popup(e.x_root+40, e.y_root+10, entry="0")
 
   except tk.TclError:
     print("rClick menu, something wrong")
@@ -229,8 +238,12 @@ def rClicker(e):
 
 def rClickbinder(r):
   try:
-    for b in [ 'Text', 'Entry', 'Listbox', 'Label']: #
-      r.bind_class(b, sequence='<Button-3>', func=rClicker, add='')
+    # workaround for different mouse button on mac
+    if(platform.system() == 'Darwin'):
+      buttonname = '<Button-2>'
+    else:
+      buttonname = '<Button-3>'
+    r.bind(buttonname, rClicker)
   except tk.TclError:
     print("rClickbinder, something wrong")
     pass
@@ -238,5 +251,4 @@ def rClickbinder(r):
 root = tk.Tk()
 root.title("Unzipapp")
 CUnzipApp(root)
-rClickbinder(root)
 root.mainloop()
