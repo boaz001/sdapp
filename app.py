@@ -148,10 +148,10 @@ class CUnzipApp:
         else:
           shutil.rmtree(path)
           print("Deleted entry:", path)
-        return True
       except Exception as e:
         print("Exception caught:", e)
         return False
+    return True
 
   def extracttopath(self):
     #print("extracttopath()")
