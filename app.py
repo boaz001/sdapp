@@ -122,8 +122,8 @@ class CUnzipApp:
         print("File retrieved")
         self.printmessage("File retrieved")
       if (zipfile.is_zipfile(source) == True):
-        print("File is valid ZIP file")
-        self.printmessage("File is valid ZIP file")
+        print("File is a valid ZIP file")
+        self.printmessage("File is a valid ZIP file")
         self.sourcepath.delete(0, last='end')
         self.sourcepath.insert(0, source)
         print("New source file: ", source)
@@ -173,11 +173,11 @@ class CUnzipApp:
               print("Unpacking files...")
               myfile = ZipFile(self.sourcepath.get())
               myfile.extractall(self.destinationpath.get())
+              print("Done!")
+              self.printmessage("Done!")
             else:
               self.printmessage("Erasing failed, didn't unpack")
               print("Erasing failed, didn't unpack")
-            print("Done!")
-            self.printmessage("Done!")
         else:
           print("Overwrite disabled! Appending to: ", self.destinationpath.get())
           print("Unpacking files...")
